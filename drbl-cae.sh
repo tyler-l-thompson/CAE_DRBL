@@ -11,7 +11,7 @@ Lab_2=$2
 image_name=$3
 image_path=${image_dir}/${image_name}
 install_dir=$(dirname $(pwd -P))
-drbl_config_file="/opt/CAE_DRBL/drblpush.conf"
+drbl_config_file="/etc/drbl/drblpush.conf"
 mac_path_1="${mac_dir}/${Lab_1}.txt"
 mac_path_2="${mac_dir}/${Lab_2}.txt"
 
@@ -111,7 +111,7 @@ function drbl_start () {
         echo "ip_start=1" >> ${drbl_config_file}
         echo ""  >> ${drbl_config_file}
     fi
-    cp -rfv ${drbl_config_file} /etc/drbl/drblpush.conf
+
     drblpush -c ${drbl_config_file}
 }
 
@@ -142,18 +142,26 @@ function get_args () {
     It is only capable of pushing an image to a lab, not pulling.
     If you only want to image one lab, pass NONE as the second lab.
 
-    $(basename "$0") [-h] [-l] LAB1 LAB2 IMAGE
+    $(basename "$0") [-h] [-l] [-s] [-t n] LAB1 LAB2 IMAGE
 
     where:
-        -h      Show this help text.
-        -l      List images available to push.
-        -s      Stop Clonezilla and turn off imaging ports.
-        LAB1    The name of the first lab to image. e.g. C-224
-        LAB2    The name of the second lab to image. Pass NONE for only one lab. e.g. C-226
-        IMAGE   The name of the image to push.
+        -h          Show this help text.
+        -l          List images available to push.
+        -s          Stop Clonezilla and turn off imaging ports.
+        -t    int   Time to wait until automatically starting the push in seconds. Default 1200 seconds.
+        LAB1        The name of the first lab to image. e.g. C-224
+        LAB2        The name of the second lab to image. Pass NONE for only one lab. e.g. C-226
+        IMAGE       The name of the image to push.
     "
 
-    while getopts ':hls' option; do
+    # print help if no parameters are passed
+    if [[ -z $1 ]]
+    then
+        echo "$usage"
+        exit 0
+    fi
+
+    while getopts ':hlst:' option; do
       case "$option" in
         h)
             echo "$usage"
@@ -169,6 +177,14 @@ function get_args () {
             control_ports 0
             echo "Clonezilla has been stopped and image ports turned off."
             exit 0
+            ;;
+        t)
+            time_to_wait=$OPTARG
+            ;;
+        :)
+            printf "missing argument for -%s\n" "$OPTARG" >&2
+            echo "$usage" >&2
+            exit 1
             ;;
        \?) printf "illegal option: -%s\n" "$OPTARG" >&2
            echo "$usage" >&2
@@ -251,12 +267,16 @@ function main () {
     user_confirmation "Ready to wakeup computers in ${Lab_1}?"
     wake_computers ${mac_path_1}
 
-    user_confirmation "Ready to wakeup computers in ${Lab_2}?"
-    wake_computers ${mac_path_2}
+    if [[ ${Lab_2} != "NONE" ]]
+    then
+        user_confirmation "Ready to wakeup computers in ${Lab_2}?"
+        wake_computers ${mac_path_2}
+    fi
 
 }
 
 check_user "root"
 get_args $*
+echo "$time_to_wait"
 main
 exit 0
