@@ -277,6 +277,6 @@ function main () {
 
 check_user "root"
 get_args $*
-echo "$time_to_wait"
-main
+echo "$Lab_1 $Lab_2 $image_name"
+#main
 exit 0
