@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# DRBL optimized for the CAE Center
+# Author: Tyler Thompson
+# Date: July 1, 2019
+#
+
 image_dir="/images"
 mac_dir="/alva/LabInfo/mac"
 drbl_config_file="/etc/drbl/drblpush.conf"
@@ -9,7 +15,16 @@ time_to_wait="1500"
 
 declare lab_1 lab_2 image_name mac_path_1 mac_path_2 machine_count clients_to_wait image_path
 
-function get_args () {
+#######################################
+# Parses command line for arguments
+# Globals: lab_1 lab_2 image_name
+#   time_to_wait clients_to_wait
+#   image_dir mac_dir mac_path_1
+#   image_path
+# Arguments: None
+# Returns: None
+#######################################
+get_args() {
     local OPTIND
     local OPTARG
 
@@ -123,7 +138,17 @@ function get_args () {
     image_path="${image_dir}/${image_name}"
 }
 
-function control_ports () {
+#######################################
+# Controls bringing up and down the
+# networking ports used for imaging
+# Globals: None
+# Arguments:
+#   0 - Both down
+#   1 - One port up
+#   2 - Both ports up
+# Returns: None
+#######################################
+control_ports() {
     case $1 in
         0)
             ifconfig ${image_port_1} down
@@ -145,7 +170,14 @@ function control_ports () {
     ifconfig ${image_port_2}
 }
 
-function wake_computers () {
+#######################################
+# Send wake on lan packets to a list of
+# mac addresses defined in a file
+# Globals: None
+# Arguments: path to file
+# Returns: None
+#######################################
+wake_computers() {
     while IFS='' read -r line || [[ -n "$line" ]]; do
         echo "Waking up: $line"
         etherwake -i ${multicast_port} ${line}
@@ -153,15 +185,27 @@ function wake_computers () {
     done < "$1"
 }
 
-function clonezilla_start () {
+#######################################
+# Start clonezilla in disk restore mode
+# Globals: clients_to_wait
+# Arguments: None
+# Returns: None
+#######################################
+clonezilla_start() {
     local disk_name=$(cat "$image_path/disk")
     if [[ -z "$clients_to_wait" ]]; then
         clients_to_wait=${machine_count}
     fi
-    echo "drbl-ocs -g auto -e1 auto -e2 -x -r -e -icds -j2 -a -srel -sc0 -p poweroff --clients-to-wait ${clients_to_wait} --time-to-wait ${time_to_wait} -l en_US.UTF-8 --mcast-iface ${multicast_port} startdisk multicast_restore ${image_name} ${disk_name}"
+    drbl-ocs -g auto -e1 auto -e2 -x -r -e -icds -j2 -a -srel -sc0 -p poweroff --clients-to-wait ${clients_to_wait} --time-to-wait ${time_to_wait} -l en_US.UTF-8 --mcast-iface ${multicast_port} startdisk multicast_restore ${image_name} ${disk_name}
 }
 
-function drbl_start () {
+#######################################
+# Setup drbl for pxe boot
+# Globals: None
+# Arguments: None
+# Returns: None
+#######################################
+drbl_start() {
     local drbl_config_header="#Setup for general
 [general]
 domain=wmich.edu
@@ -220,10 +264,18 @@ ip_start=1
         echo "$drbl_config_second_interface" >> "$drbl_config_file"
     fi
 
-    # drblpush -c ${drbl_config_file}
+    drblpush -c ${drbl_config_file}
 }
 
-function user_confirmation () {
+#######################################
+# Get user confirmation on a prompt.
+# If the user response is not 'y',
+# then the program is exited.
+# Globals: None
+# Arguments: prompt
+# Returns: None
+#######################################
+user_confirmation() {
     echo "$1 [y|n]"
     read user_input
     if [[ "$user_input" != "y" ]]; then
@@ -232,26 +284,57 @@ function user_confirmation () {
     fi
 }
 
-function check_user () {
+#######################################
+# Checks if the user running the script
+# matches the argument passed.
+# Globals: None
+# Arguments: username
+# Returns: None
+#######################################
+check_user() {
     # make sure we are root
     if [[ "$USER" != "$1" ]]; then
-        echo "This script must be run as $1."
+        err "This script must be run as $1."
         exit 0
     fi
 }
 
-function check_lab_name () {
-    lab_mac_file="$mac_dir"/"$1".txt
+#######################################
+# Checks to make sure the mac address
+# file for a given lab exists.
+# Globals: None
+# Arguments: lab
+# Returns: None
+#######################################
+check_lab_name() {
+    local lab_mac_file="$mac_dir"/"$1".txt
     echo "Checking if $lab_mac_file exists..."
     if [[ -f "$lab_mac_file" ]]; then
         echo "File found."
     else
-        echo "Lab mac file not found: $lab_mac_file"
+        err "Lab mac file not found: $lab_mac_file"
         exit 1
     fi
 }
 
-function main () {
+#######################################
+# Logs an error message with time stamp
+# to STDERR
+# Globals: None
+# Arguments: error message
+# Returns: None
+#######################################
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $@" >&2
+}
+
+#######################################
+# Main function
+# Globals: machine_count
+# Arguments: all
+# Returns: None
+#######################################
+main() {
     # check user is root
     check_user "root"
 
@@ -260,7 +343,7 @@ function main () {
 
     # check if labs are the same
     if [[ ${lab_1} == ${lab_2} ]]; then
-        echo "You must pass two different labs as parameters."
+        err "You must pass two different labs as parameters."
         exit 1
     fi
 
@@ -274,13 +357,13 @@ function main () {
 
     # check if image directory exits
     if [[ -z ${image_name} ]]; then
-        echo "Image name must be specified with -i. See -h help menu."
+        err "Image name must be specified with -i. See -h help menu."
         exit 1
     fi
     if [[ -d ${image_path} ]]; then
-        echo "Image path $image_path found."
+        err "Image path $image_path found."
     else
-        echo "Image path $image_path not found. Double check spelling of image name."
+        err "Image path $image_path not found. Double check spelling of image name."
         exit 1
     fi
 
