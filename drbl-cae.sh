@@ -215,7 +215,7 @@ client_init=text
 login_gdm_opt=
 timed_login_time=
 maxswapsize=
-ocs_img_repo_dir=$image_path
+ocs_img_repo_dir=$image_dir
 total_client_no=$machine_count
 create_account=
 account_passwd_length=8
@@ -375,12 +375,12 @@ main() {
     echo "Total machines to image: $machine_count"
 
     # enable image ports
-#    user_confirmation "Ready to enable imaging ports?"
-#    if [[ ! -z ${lab_2} ]]; then
-#        control_ports 2
-#    else
-#        control_ports 1
-#    fi
+    user_confirmation "Ready to enable imaging ports?"
+    if [[ ! -z ${lab_2} ]]; then
+        control_ports 2
+    else
+        control_ports 1
+    fi
 
     user_confirmation "Ready to setup DRBL?"
     drbl_start
