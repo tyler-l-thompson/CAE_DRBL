@@ -46,7 +46,7 @@ get_args() {
         -s          Stop Clonezilla and turn off imaging ports.
         -v          List the versions of DRBL, Clonezilla, and Partclone.
         -g          Tail the log files associated with DRBL and CLonezilla.
-        -w   LAB    Wake computers in specified lab
+        -w   LAB    Wake computers in specified lab. Pass -a, -b, or -o for target MAC addresses.
         -p   int    Control imaging ports. 0 - Disable both ports. 1 - Enable one port. 2 - Enable two ports.
 
         Pushing Commands
@@ -63,7 +63,7 @@ get_args() {
         -m   int    Number of clients to wait to connect before starting Clonezilla. Default is all clients.
         -d   DIR    Set the image directory path. Default: $image_dir
         -f   DIR    Set the mac address files directory path. Default: $mac_dir
-        -o   FILE   Instead of pushing to lab, use a specified mac address file. -a and -b can be omitted.
+        -o   FILE   Instead of pushing to lab, use a specified mac address file. -a and -b can be omitted. Use full path.
     "
 
     # print help if no parameters are passed
