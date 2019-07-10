@@ -12,6 +12,7 @@ image_port_1="bond0.142:1"
 image_port_2="bond0.142:2"
 multicast_port="bond0.142"
 time_to_wait="1500"
+log_watch_files="tail -f /var/log/syslog /var/log/clonezilla/ocsmgrd-notify.log /var/log/clonezilla/ocsmgrd.log /var/log/clonezilla/clonezilla-jobs.log"
 
 declare lab_1 lab_2 image_name mac_path_1 mac_path_2 machine_count clients_to_wait image_path
 
@@ -34,7 +35,7 @@ get_args() {
     It is only capable of pushing an image to a lab, not pulling.
     If you only want to image one lab, pass NONE as the second lab.
 
-    $(basename "$0") [-h|-l|-s|-w|-p] [-a LAB1] [-b LAB2] [-i IMAGE] [-t n] [-m n] [-d s] [-f s] [-o s]
+    $(basename "$0") [-h|-l|-s|-v|-g|-w|-p] [-a LAB1] [-b LAB2] [-i IMAGE] [-t n] [-m n] [-d s] [-f s] [-o s]
 
     where:
         Non-Pushing Commands
@@ -43,6 +44,8 @@ get_args() {
         -h          Show this help text.
         -l          List images available to push.
         -s          Stop Clonezilla and turn off imaging ports.
+        -v          List the versions of DRBL, Clonezilla, and Partclone.
+        -g          Tail the log files associated with DRBL and CLonezilla.
         -w   LAB    Wake computers in specified lab
         -p   int    Control imaging ports. 0 - Disable both ports. 1 - Enable one port. 2 - Enable two ports.
 
@@ -69,7 +72,7 @@ get_args() {
         exit 0
     fi
 
-    while getopts ':hlsw:p:a:b:i:t:m:f:d:o:' option; do
+    while getopts ':hlsvgw:p:a:b:i:t:m:f:d:o:' option; do
       case "$option" in
         h)
             echo "$usage"
@@ -84,6 +87,14 @@ get_args() {
             drbl-all-service stop
             control_ports 0
             echo "Clonezilla has been stopped and image ports turned off."
+            exit 0
+            ;;
+        v)
+            dpkg -l drbl clonezilla partclone
+            exit 0
+            ;;
+        g)
+            tail -f "$log_watch_files"
             exit 0
             ;;
         w)
@@ -396,6 +407,8 @@ main() {
         wake_computers ${mac_path_2}
     fi
 
+    echo "Beginning to tail log files. Press CTRL + C to return to command line"
+    tail -f "$log_watch_files"
 }
 
 main "$@"
