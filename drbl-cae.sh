@@ -12,7 +12,7 @@ image_port_1="bond0.142:1"
 image_port_2="bond0.142:2"
 multicast_port="bond0.142"
 time_to_wait="1500"
-log_watch_files="tail -f /var/log/syslog /var/log/clonezilla/ocsmgrd-notify.log /var/log/clonezilla/ocsmgrd.log /var/log/clonezilla/clonezilla-jobs.log"
+log_watch_files="/var/log/syslog /var/log/clonezilla/ocsmgrd-notify.log /var/log/clonezilla/ocsmgrd.log /var/log/clonezilla/clonezilla-jobs.log"
 
 declare lab_1 lab_2 image_name mac_path_1 mac_path_2 machine_count clients_to_wait image_path
 
@@ -94,7 +94,7 @@ get_args() {
             exit 0
             ;;
         g)
-            tail -f "$log_watch_files"
+            tail -f ${log_watch_files}
             exit 0
             ;;
         w)
@@ -408,7 +408,7 @@ main() {
     fi
 
     echo "Beginning to tail log files. Press CTRL + C to return to command line"
-    tail -f "$log_watch_files"
+    tail -f ${log_watch_files}
 }
 
 main "$@"
