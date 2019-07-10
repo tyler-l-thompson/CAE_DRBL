@@ -196,7 +196,7 @@ clonezilla_start() {
     if [[ -z "$clients_to_wait" ]]; then
         clients_to_wait=${machine_count}
     fi
-    drbl-ocs -g auto -e1 auto -e2 -x -r -e -icds -j2 -a -srel -sc0 -p poweroff --clients-to-wait ${clients_to_wait} --time-to-wait ${time_to_wait} -l en_US.UTF-8 --mcast-iface ${multicast_port} startdisk multicast_restore ${image_name} ${disk_name}
+    drbl-ocs -g auto -e1 auto -e2 -x -r -e -icds -j2 -a -k1 -scr -srel -sc0 -p poweroff --clients-to-wait ${clients_to_wait} --time-to-wait ${time_to_wait} -l en_US.UTF-8 --mcast-iface ${multicast_port} startdisk multicast_restore ${image_name} ${disk_name}
 }
 
 #######################################
