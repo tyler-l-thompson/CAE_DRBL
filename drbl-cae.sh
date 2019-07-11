@@ -53,7 +53,7 @@ get_args() {
             These commands will allow you to setup DRBL and Clonezilla on the server.
 
         -a   LAB1   The name of the first lab to image. e.g. C-224
-        -b   LAB2   The name of the second lab to image. Omit if pushing to one lab.
+        -b   LAB2   (CURRENTLY NOT WORKING) The name of the second lab to image. Omit if pushing to one lab.
         -i   IMAGE  The name of the image to push.
 
         Pushing Options
@@ -64,6 +64,18 @@ get_args() {
         -d   DIR    Set the image directory path. Default: $image_dir
         -f   DIR    Set the mac address files directory path. Default: $mac_dir
         -o   FILE   Instead of pushing to lab, use a specified mac address file. -a and -b can be omitted. Use full path.
+
+        Examples
+
+            drbl-cae -a C-224 -i HPZ2-Fall2019-190801
+                Image lab C-224 with image HPZ2-Fall2019-190801
+
+            drbl-cae -s
+                Shutdown DRBL and Clonezilla and turn off image ports. Should be run after an image has finished pushing.
+
+            drbl-cae -o /opt/automatedImaging/macs/delltbs.txt -i VMImage-Fall2019-190704 -m 1
+                Image the computers defined in /opt/automatedImaging/macs/delltbs.txt with image VMImage-Fall2019-190704
+                and start the push after 1 client connects.
     "
 
     # print help if no parameters are passed
@@ -94,6 +106,7 @@ get_args() {
             exit 0
             ;;
         g)
+            echo "Beginning to tail log files. Press CTRL + C to return to command line"
             tail -f ${log_watch_files}
             exit 0
             ;;
