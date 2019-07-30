@@ -33,7 +33,6 @@ get_args() {
     DRBL optimized for the CAE Center.
     This program is capable of imaging one or two labs at the same time.
     It is only capable of pushing an image to a lab, not pulling.
-    If you only want to image one lab, pass NONE as the second lab.
 
     $(basename "$0") [-h|-l|-s|-v|-g|-w|-p] [-a LAB1] [-b LAB2] [-i IMAGE] [-t n] [-m n] [-d s] [-f s] [-o s]
 
